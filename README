@@ -3,7 +3,7 @@ How to build code?
 * modify tera.sh
 * modify make.sh for your build environment.
 * connect android phone to PC, and adb connection is ok.
-* run make.sh
+* run make.sh, and output file is "./root-tera/tera".
 
 How to install root-tera?
 # connect android phone to PC, and adb connection is ok.
@@ -16,7 +16,7 @@ $ cd ./root-tera/
 $ ./setup.sh uninstall
 
 
-File "./root-tera/HopebayHCFSmgmt.apk"?
+File "./root-tera/hcfs"?
 * git url:   git@gitlab.hopebaytech.com:gateway-2-0/hcfs.git
 * branch:    feature/root-tera
 * commit id: 9f79eeec67
