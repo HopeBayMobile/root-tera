@@ -1,7 +1,7 @@
 #!/system/bin/sh
 
 echo
-echo Tera Version: 0.3.0
+echo Tera Version: 0.4.0
 echo
 
 EXE=$0
@@ -48,7 +48,8 @@ function install()
     mount -o rw,remount /system
     mkdir -p /system/hcfs
     chmod 0755 /system/hcfs
-    mv $EXE /sdcard/hcfs /sdcard/hcfsapid /sdcard/hcfsconf /sdcard/hcfs.conf /sdcard/HCFSvol /sdcard/libcurl.so /sdcard/libfuse.so /sdcard/libjansson.so /sdcard/libzip.so /system/hcfs/
+    cp $EXE /sdcard/hcfs /sdcard/hcfsapid /sdcard/hcfsconf /sdcard/hcfs.conf /sdcard/HCFSvol /sdcard/libcurl.so /sdcard/libfuse.so /sdcard/libjansson.so /sdcard/libzip.so /system/hcfs/
+    rm $EXE /sdcard/hcfs /sdcard/hcfsapid /sdcard/hcfsconf /sdcard/hcfs.conf /sdcard/HCFSvol /sdcard/libcurl.so /sdcard/libfuse.so /sdcard/libjansson.so /sdcard/libzip.so
     chown root:root /system/hcfs/hcfs.conf /system/hcfs/libcurl.so /system/hcfs/libfuse.so /system/hcfs/libjansson.so /system/hcfs/libzip.so
     chmod 644 /system/hcfs/libcurl.so /system/hcfs/libfuse.so /system/hcfs/libjansson.so /system/hcfs/libzip.so
     chown root:system /system/hcfs/hcfs /system/hcfs/hcfsapid /system/hcfs/hcfsconf /system/hcfs/HCFSvol

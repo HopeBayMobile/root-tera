@@ -6,7 +6,8 @@ if [ "$1" == "install" ] ; then
     adb shell su --mount-master -c id &&
     adb install HopebayHCFSmgmt.apk 2> $TMP &&
     adb push hcfs hcfsapid hcfsconf HCFSvol hcfs.conf libcurl.so libfuse.so libjansson.so libzip.so tera /sdcard/ &&
-    adb shell su --mount-master -c mv /sdcard/tera /dev/ &&
+    adb shell su --mount-master -c cp /sdcard/tera /dev/ &&
+    adb shell su --mount-master -c rm /sdcard/tera &&
     adb shell su --mount-master -c chmod 777 /dev/tera &&
     adb shell su --mount-master -c /dev/tera install
 
@@ -36,7 +37,8 @@ if [ "$1" == "uninstall" ] ; then
     adb shell su --mount-master -c id &&
     adb uninstall com.hopebaytech.hcfsmgmt 2> /dev/null &&
     adb push tera /sdcard/ &&
-    adb shell su --mount-master -c mv /sdcard/tera /dev/ &&
+    adb shell su --mount-master -c cp /sdcard/tera /dev/ &&
+    adb shell su --mount-master -c rm /sdcard/tera &&
     adb shell su --mount-master -c chmod 777 /dev/tera &&
     adb shell su --mount-master -c /dev/tera uninstall
 
