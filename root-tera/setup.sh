@@ -1,22 +1,17 @@
 #!/bin/bash
 
-if [ "$1" == "install" ] ; then
-    TMP=`mktemp`
+ARG1=$1
 
-    adb shell su --mount-master -c id &&
-    adb install HopebayHCFSmgmt.apk 2> $TMP &&
-    adb push hcfs hcfsapid hcfsconf HCFSvol hcfs.conf libcurl.so libfuse.so libjansson.so libzip.so tera /sdcard/ &&
-    adb shell su --mount-master -c cp /sdcard/tera /dev/ &&
-    adb shell su --mount-master -c rm /sdcard/tera &&
-    adb shell su --mount-master -c chmod 777 /dev/tera &&
-    adb shell su --mount-master -c /dev/tera install
+if [ "$ARG1" == "install" ] ; then
+    TMP1=`mktemp`
+    TMP2=`mktemp`
 
-    RET=$?
+    adb shell su --mount-master -c id > $TMP1 &&
+    adb install HopebayHCFSmgmt.apk 2> $TMP2 &&
+    adb push hcfs hcfsapid hcfsconf HCFSvol hcfs.conf libcurl.so libfuse.so libHCFS_api.so libjansson.so libzip.so tera _setup.sh /sdcard/
 
-    adb shell su --mount-master -c rm -f /sdcard/hcfs /sdcard/hcfsapid /sdcard/hcfsconf /sdcard/HCFSvol /sdcard/hcfs.conf /sdcard/libcurl.so /sdcard/libfuse.so /sdcard/libjansson.so /sdcard/libzip.so /sdcard/tera /dev/tera
-
-    if [ $RET -ne 0 ] ; then
-        cat $TMP | grep -qw INSTALL_FAILED_ALREADY_EXISTS
+    if [ $? -ne 0 ] ; then
+        cat $TMP2 | grep -qw "INSTALL_FAILED_ALREADY_EXISTS"
         if [ $? -eq 0 ] ; then
             echo
             echo Tera INSTALL_FAILED_ALREADY_EXISTS
@@ -26,23 +21,47 @@ if [ "$1" == "install" ] ; then
             echo Tera Install Fail
             echo
         fi
+
+        rm -f $TMP1 $TMP2
+
+        exit 0
     fi
 
-    rm -f $TMP
+    OPTION=""
+    grep -q "uid=0(root)" $TMP1
+    if [ $? -eq 0 ] ; then
+        OPTION="--mount-master"
+    fi
+
+    adb shell su $OPTION -c "cp /sdcard/_setup.sh /dev/"
+    adb shell su $OPTION -c "rm /sdcard/_setup.sh"
+    adb shell su $OPTION -c "chmod 777 /dev/_setup.sh"
+    adb shell su $OPTION -c "/dev/_setup.sh $ARG1"
+
+    rm -f $TMP1 $TMP2
 
     exit 0
 fi
 
-if [ "$1" == "uninstall" ] ; then
-    adb shell su --mount-master -c id &&
-    adb uninstall com.hopebaytech.hcfsmgmt 2> /dev/null &&
-    adb push tera /sdcard/ &&
-    adb shell su --mount-master -c cp /sdcard/tera /dev/ &&
-    adb shell su --mount-master -c rm /sdcard/tera &&
-    adb shell su --mount-master -c chmod 777 /dev/tera &&
-    adb shell su --mount-master -c /dev/tera uninstall
+if [ "$ARG1" == "uninstall" ] ; then
+    TMP1=`mktemp`
 
-    adb shell su --mount-master -c rm -f /dev/tera
+    adb shell su --mount-master -c id > $TMP1 &&
+    adb uninstall com.hopebaytech.hcfsmgmt 2> /dev/null &&
+    adb push tera _setup.sh /sdcard/
+
+    OPTION=""
+    grep -q "uid=0(root)" $TMP1
+    if [ $? -eq 0 ] ; then
+        OPTION="--mount-master"
+    fi
+
+    adb shell su $OPTION -c "cp /sdcard/_setup.sh /dev/"
+    adb shell su $OPTION -c "rm /sdcard/_setup.sh"
+    adb shell su $OPTION -c "chmod 777 /dev/_setup.sh"
+    adb shell su $OPTION -c "/dev/_setup.sh $ARG1"
+
+    rm -f $TMP1
 
     exit 0
 fi

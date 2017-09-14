@@ -1,11 +1,15 @@
 #!/system/bin/sh
 
+ARG0="$0"
+ARG1="$1"
+
 echo
 echo Tera Version: 0.4.0
 echo
 
-EXE=$0
-EXE_NAME=`basename $EXE`
+EXE=$ARG0
+#EXE_NAME=`basename $EXE`
+EXE_NAME=`echo ${ARG0##*/}`
 
 function uninstall()
 {
@@ -58,6 +62,17 @@ function install()
     chmod 4755 /system/hcfs/$EXE_NAME
     mount -o ro,remount /system
 
+    ls /data/app/com.hopebaytech.hcfsmgmt*/lib/arm64/ &> /dev/null
+    if [ $? -eq 0 ] ; then
+        LIB_PATH="/data/app/com.hopebaytech.hcfsmgmt*/lib/arm64/"
+    else
+        LIB_PATH="/data/data/com.hopebaytech.hcfsmgmt/lib/"
+    fi
+    cp /sdcard/libHCFS_api.so $LIB_PATH
+    rm /sdcard/libHCFS_api.so
+    chown system:system $LIB_PATH/libHCFS_api.so
+    chmod 755 $LIB_PATH/libHCFS_api.so
+
     mkdir -p /data/hcfs /data/hcfs/metastorage /data/hcfs/blockstorage
 }
 
@@ -68,8 +83,8 @@ trap "" SIGHUP
 
 SDCARD="/sdcard"
 while [ 1 ] ; do
-    LINK=`readlink $SDCARD`
-    if [ "$LINK" == "" ] ; then
+    LINK=`readlink -f $SDCARD`
+    if [ "$LINK" == "" -o "$LINK" == "$SDCARD" ] ; then
         break
     fi
     SDCARD=$LINK
@@ -99,7 +114,7 @@ if [ $? -eq 0 ] ; then
     fi
 fi
 
-if [ "$1" == "uninstall" ] ; then
+if [ "$ARG1" == "uninstall" ] ; then
     rm $EXE
     uninstall
     sync
@@ -111,7 +126,7 @@ if [ "$1" == "uninstall" ] ; then
     exit
 fi
 
-if [ "$1" == "install" ] ; then
+if [ "$ARG1" == "install" ] ; then
     if [ -e /system/hcfs -o -e /data/hcfs ] ; then
         rm $EXE
 
@@ -190,11 +205,14 @@ rm -f /data/data/com.hopebaytech.hcfsmgmt/hcfsapid_sock
 hcfsapid &
 while [ ! -e /data/data/com.hopebaytech.hcfsmgmt/hcfsapid_sock ]; do sleep 0.1; done
 
-chown `ls -ld /data/data/com.hopebaytech.hcfsmgmt | tr -s " " | cut -d " " -f3,4 | tr " " ":"` /data/data/com.hopebaytech.hcfsmgmt/hcfsapid_sock
+#chown `ls -ld /data/data/com.hopebaytech.hcfsmgmt | tr -s " " | cut -d " " -f3,4 | tr " " ":"` /data/data/com.hopebaytech.hcfsmgmt/hcfsapid_sock
+LS_APP=`ls -ld /data/data/com.hopebaytech.hcfsmgmt`
+set -- $LS_APP
+chown $3:$4 /data/data/com.hopebaytech.hcfsmgmt/hcfsapid_sock 2> /dev/null
 
 sync
 
-if [ "$1" == "install" ] ; then
+if [ "$ARG1" == "install" ] ; then
     #am start -n com.hopebaytech.hcfsmgmt/.main.MainActivity
     am start -n com.android.settings/.applications.InstalledAppDetails -d package:com.hopebaytech.hcfsmgmt
 fi
