@@ -1,10 +1,3 @@
-How to build code?
-* cp files to ./root-tera/
-* modify tera.sh
-* modify make.sh for your build environment.
-* connect android phone to PC, and adb connection is ok.
-* run make.sh, and output file is "./root-tera/tera".
-
 How to install root-tera?
 # connect android phone to PC, and adb connection is ok.
 $ cd ./root-tera/
@@ -15,6 +8,9 @@ How to uninstall root-tera?
 $ cd ./root-tera/
 $ ./setup.sh uninstall
 
+
+File "./root-tera/tera"?
+Shell script, tera daemon in Android.
 
 File "./root-tera/hcfs"?
 * git url:   git@gitlab.hopebaytech.com:gateway-2-0/hcfs.git

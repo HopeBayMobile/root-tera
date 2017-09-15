@@ -7,24 +7,30 @@ if [ "$ARG1" == "install" ] ; then
     TMP2=`mktemp`
 
     adb shell su --mount-master -c id > $TMP1 &&
-    adb install HopebayHCFSmgmt.apk 2> $TMP2 &&
+    adb install HopebayHCFSmgmt.apk &> $TMP2 &&
     adb push hcfs hcfsapid hcfsconf HCFSvol hcfs.conf libcurl.so libfuse.so libHCFS_api.so libjansson.so libzip.so tera _setup.sh /sdcard/
 
-    if [ $? -ne 0 ] ; then
-        cat $TMP2 | grep -qw "INSTALL_FAILED_ALREADY_EXISTS"
-        if [ $? -eq 0 ] ; then
-            echo
-            echo Tera INSTALL_FAILED_ALREADY_EXISTS
-            echo
-        else
-            echo
-            echo Tera Install Fail
-            echo
-        fi
+    RET=$?
+
+    cat $TMP2 | grep -qw "INSTALL_FAILED_ALREADY_EXISTS"
+    if [ $? -eq 0 ] ; then
+        echo
+        echo Tera INSTALL_FAILED_ALREADY_EXISTS
+        echo
 
         rm -f $TMP1 $TMP2
 
-        exit 0
+        exit 1
+    fi
+
+    if [ $RET -ne 0 ] ; then
+        echo
+        echo Tera Install Fail
+        echo
+
+        rm -f $TMP1 $TMP2
+
+        exit 1
     fi
 
     OPTION=""
