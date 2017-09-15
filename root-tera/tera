@@ -136,17 +136,20 @@ SD_READ=""
 SD_WRITE=""
 echo "$SDCARD" | grep -q "^\/storage\/"
 if [ $? -eq 0 ] ; then
-    V=`echo $SDCARD | sed "s/^\/storage\//\/mnt\/runtime\/default\//g"`
+    #V=`echo $SDCARD | sed "s/^\/storage\//\/mnt\/runtime\/default\//g"`
+    V=`echo /mnt/runtime/default/${SDCARD#*/storage/}`
     if [ -e $V ] ; then
         echo $V
         SD_DEFAULT=$V
     fi
-    V=`echo $SDCARD | sed "s/^\/storage\//\/mnt\/runtime\/read\//g"`
+    #V=`echo $SDCARD | sed "s/^\/storage\//\/mnt\/runtime\/read\//g"`
+    V=`echo /mnt/runtime/read/${SDCARD#*/storage/}`
     if [ -e $V ] ; then
         echo $V
         SD_READ=$V
     fi
-    V=`echo $SDCARD | sed "s/^\/storage\//\/mnt\/runtime\/write\//g"`
+    #V=`echo $SDCARD | sed "s/^\/storage\//\/mnt\/runtime\/write\//g"`
+    V=`echo /mnt/runtime/write/${SDCARD#*/storage/}`
     if [ -e $V ] ; then
         echo $V
         SD_WRITE=$V
