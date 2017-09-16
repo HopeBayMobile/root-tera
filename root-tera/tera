@@ -1,5 +1,21 @@
 #!/system/bin/sh
 
+if [ "$1" != "su" ] ; then
+    OPTION=""
+
+    MY_ID=`su --mount-master -c id`
+    echo $MY_ID | grep -q "uid=0(root)"
+    if [ $? -eq 0 ] ; then
+        OPTION="--mount-master"
+    fi
+
+    exec su $OPTION -c $0 su $*
+    exit 1
+fi
+
+shift
+
+
 ARG0="$0"
 ARG1="$1"
 

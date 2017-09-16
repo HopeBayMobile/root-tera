@@ -3,22 +3,21 @@
 ARG1=$1
 
 if [ "$ARG1" == "install" ] ; then
-    TMP1=`mktemp`
-    TMP2=`mktemp`
+    TMP=`mktemp`
 
-    adb shell su --mount-master -c id > $TMP1 &&
-    adb install HopebayHCFSmgmt.apk &> $TMP2 &&
-    adb push hcfs hcfsapid hcfsconf HCFSvol hcfs.conf libcurl.so libfuse.so libHCFS_api.so libjansson.so libzip.so tera _setup.sh /sdcard/
+    adb shell su -c id &&
+    adb install HopebayHCFSmgmt.apk &> $TMP &&
+    adb push hcfs hcfsapid hcfsconf HCFSvol hcfs.conf libcurl.so libfuse.so libHCFS_api.so libjansson.so libzip.so tera /sdcard/
 
     RET=$?
 
-    cat $TMP2 | grep -qw "INSTALL_FAILED_ALREADY_EXISTS"
+    cat $TMP | grep -qw "INSTALL_FAILED_ALREADY_EXISTS"
     if [ $? -eq 0 ] ; then
         echo
         echo Tera INSTALL_FAILED_ALREADY_EXISTS
         echo
 
-        rm -f $TMP1 $TMP2
+        rm -f $TMP
 
         exit 1
     fi
@@ -28,46 +27,30 @@ if [ "$ARG1" == "install" ] ; then
         echo Tera Install Fail
         echo
 
-        rm -f $TMP1 $TMP2
+        rm -f $TMP
 
         exit 1
     fi
 
-    OPTION=""
-    grep -q "uid=0(root)" $TMP1
-    if [ $? -eq 0 ] ; then
-        OPTION="--mount-master"
-    fi
+    adb shell su -c "cp /sdcard/tera /dev/"
+    adb shell "rm /sdcard/tera"
+    adb shell su -c "chmod 777 /dev/tera"
+    adb shell su -c "/dev/tera $ARG1"
 
-    adb shell su $OPTION -c "cp /sdcard/_setup.sh /dev/"
-    adb shell su $OPTION -c "rm /sdcard/_setup.sh"
-    adb shell su $OPTION -c "chmod 777 /dev/_setup.sh"
-    adb shell su $OPTION -c "/dev/_setup.sh $ARG1"
-
-    rm -f $TMP1 $TMP2
+    rm -f $TMP
 
     exit 0
 fi
 
 if [ "$ARG1" == "uninstall" ] ; then
-    TMP1=`mktemp`
-
-    adb shell su --mount-master -c id > $TMP1 &&
+    adb shell su -c id &&
     adb uninstall com.hopebaytech.hcfsmgmt 2> /dev/null &&
-    adb push tera _setup.sh /sdcard/
+    adb push tera /sdcard/
 
-    OPTION=""
-    grep -q "uid=0(root)" $TMP1
-    if [ $? -eq 0 ] ; then
-        OPTION="--mount-master"
-    fi
-
-    adb shell su $OPTION -c "cp /sdcard/_setup.sh /dev/"
-    adb shell su $OPTION -c "rm /sdcard/_setup.sh"
-    adb shell su $OPTION -c "chmod 777 /dev/_setup.sh"
-    adb shell su $OPTION -c "/dev/_setup.sh $ARG1"
-
-    rm -f $TMP1
+    adb shell su -c "cp /sdcard/tera /dev/"
+    adb shell "rm /sdcard/tera"
+    adb shell su -c "chmod 777 /dev/tera"
+    adb shell su -c "/dev/tera $ARG1"
 
     exit 0
 fi
