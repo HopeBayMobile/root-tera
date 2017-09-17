@@ -20,7 +20,7 @@ ARG0="$0"
 ARG1="$1"
 
 echo
-echo Tera Version: 0.5.0
+echo Tera Version: 0.6.0
 echo
 
 EXE=$ARG0
