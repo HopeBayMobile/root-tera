@@ -12,7 +12,10 @@ $ ./setup.sh uninstall
 File "./root-tera/tera"?
 Shell script, tera daemon in Android.
 
-File "./root-tera/hcfs"?
+Directory "./root-tera/files/"?
+You MUST Overwrite files(depend on different Android version & mobile) to the directory.
+
+File "./root-tera/files/hcfs"?
 * git url:   git@gitlab.hopebaytech.com:gateway-2-0/hcfs.git
 * branch:    feature/root-tera
 * commit id: 9f79eeec67

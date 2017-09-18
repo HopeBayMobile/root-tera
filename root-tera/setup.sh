@@ -6,8 +6,8 @@ if [ "$ARG1" == "install" ] ; then
     TMP=`mktemp`
 
     adb shell su -c id &&
-    adb install HopebayHCFSmgmt.apk &> $TMP &&
-    adb push hcfs hcfsapid hcfsconf HCFSvol hcfs.conf libcurl.so libfuse.so libHCFS_api.so libjansson.so libzip.so tera /sdcard/
+    adb install files/HopebayHCFSmgmt.apk &> $TMP &&
+    adb push files/hcfs files/hcfsapid files/hcfsconf files/HCFSvol files/libcurl.so files/libfuse.so files/libHCFS_api.so files/libjansson.so files/libzip.so hcfs.conf tera /sdcard/
 
     RET=$?
 
@@ -32,8 +32,10 @@ if [ "$ARG1" == "install" ] ; then
         exit 1
     fi
 
-    adb shell su -c "cp /sdcard/tera /dev/"
-    adb shell "rm /sdcard/tera"
+    adb shell su -c "cp -f /sdcard/tera /dev/ &> /dev/null"
+    adb shell "rm -f /sdcard/tera &> /dev/null"
+    adb shell su -c "cp -f /storage/emulated/0/tera /dev/ &> /dev/null"
+    adb shell "rm -f /storage/emulated/0/tera &> /dev/null"
     adb shell su -c "chmod 777 /dev/tera"
     adb shell su -c "/dev/tera $ARG1"
 
@@ -47,8 +49,10 @@ if [ "$ARG1" == "uninstall" ] ; then
     adb uninstall com.hopebaytech.hcfsmgmt 2> /dev/null &&
     adb push tera /sdcard/
 
-    adb shell su -c "cp /sdcard/tera /dev/"
-    adb shell "rm /sdcard/tera"
+    adb shell su -c "cp -f /sdcard/tera /dev/ &> /dev/null"
+    adb shell "rm -f /sdcard/tera &> /dev/null"
+    adb shell su -c "cp -f /storage/emulated/0/tera /dev/ &> /dev/null"
+    adb shell "rm -f /storage/emulated/0/tera &> /dev/null"
     adb shell su -c "chmod 777 /dev/tera"
     adb shell su -c "/dev/tera $ARG1"
 
