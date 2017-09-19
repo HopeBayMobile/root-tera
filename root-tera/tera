@@ -66,64 +66,9 @@ function my_killall()
     (exit $RET)
 }
 
-function bind_sdcard()
-{
-    touch $SDCARD/MY-TERA/MY-TERA.var
-
-    TMP1="/dev/bind1.tmp"
-    TMP2="/dev/bind2.tmp"
-    rm -f $TMP1 $TMP2
-    touch $TMP1
-    touch $TMP2
-
-    cat /proc/self/mounts > $TMP1
-    while read LINE ; do
-        KEY=`echo "${LINE#* }"`
-        KEY=`echo "${KEY%% *}"`
-        grep -q "^$KEY$" $TMP2
-        if [ $? -eq 0 ] ; then
-            continue
-        fi
-        echo $KEY >> $TMP2
-    done < $TMP1
-
-    while read LINE ; do
-        if [ -d $LINE/MY-TERA -a ! -f $LINE/MY-TERA/MY-TERA.var ] ; then
-            echo bind $LINE/MY-TERA
-            mount -o bind $SDCARD/MY-TERA $LINE/MY-TERA
-        elif [ -d $LINE/0/MY-TERA -a ! -f $LINE/0/MY-TERA/MY-TERA.var ] ; then
-            echo bind $LINE/0/MY-TERA
-            mount -o bind $SDCARD/MY-TERA $LINE/0/MY-TERA
-        fi
-    done < $TMP2
-
-    rm $TMP1 $TMP2
-
-    rm $SDCARD/MY-TERA/MY-TERA.var
-}
-
-function umount_sdcard()
-{
-    touch $SDCARD/MY-TERA/MY-TERA.var 2> /dev/null
-
-    cat /proc/self/mounts > /dev/bind.tmp
-
-    while read LINE ; do
-        set -- $LINE
-        if [ -f $2/MY-TERA.var ] ; then
-            echo umount $2
-            umount $2 2> /dev/null
-        fi
-    done < /dev/bind.tmp
-
-    rm /dev/bind.tmp
-
-    #rm $SDCARD/MY-TERA/MY-TERA.var
-}
-
 function uninstall()
 {
-    umount_sdcard
+    umount $STORAGE/MY-TERA 2> /dev/null
 
     my_killall hcfsapid 2> /dev/null
     sleep 0.1
@@ -140,14 +85,16 @@ function uninstall()
     rm -rf /system/hcfs/
     mount -o ro,remount /system
 
+    mount -o rw,remount /
+
     if [ -f /tmp/MY-TERA.tmp ] ; then
-        mount -o rw,remount /
         umount /tmp/ 2> /dev/null
         rmdir /tmp 2> /dev/null
-        mount -o ro,remount /
     fi
 
-    rm -rf $SDCARD/MY-TERA
+    rm -rf $STORAGE/MY-TERA
+
+    mount -o ro,remount /
 }
 
 function install()
@@ -184,16 +131,7 @@ export PATH=$PATH:/system/hcfs
 
 trap "" SIGHUP
 
-SDCARD="/sdcard"
-while [ 1 ] ; do
-    LINK=`readlink -f $SDCARD`
-    if [ "$LINK" == "" -o "$LINK" == "$SDCARD" ] ; then
-        break
-    fi
-    SDCARD=$LINK
-done
-
-echo "SDCARD=$SDCARD"
+STORAGE="/storage"
 
 if [ "$ARG1" == "uninstall" ] ; then
     rm $EXE
@@ -235,18 +173,20 @@ if [ $? -eq 0 ] ; then
     exit 1
 fi
 
+mount -o rw,remount /
+
 if [ ! -d /tmp ] ; then
-    mount -o rw,remount /
     mkdir -p /tmp
     chmod 0700 /tmp
     mount -t tmpfs -o mode=0755,gid=1000 tmpfs /tmp
-    mount -o ro,remount /
 
     touch /tmp/MY-TERA.tmp
 fi
 
-mkdir -p $SDCARD/MY-TERA
-chmod 0777 $SDCARD/MY-TERA
+mkdir -p $STORAGE/MY-TERA
+chmod 0777 $STORAGE/MY-TERA
+
+mount -o ro,remount /
 
 rm -rf /dev/shm
 mkdir -p /dev/shm
@@ -262,11 +202,9 @@ while [ ! -e /dev/shm/hcfs_reporter ]; do sleep 0.1; done
 
 HCFSvol create hcfs_data internal
 
-HCFSvol mount hcfs_data $SDCARD/MY-TERA
-chown root:sdcard_rw $SDCARD/MY-TERA
-chmod 777 $SDCARD/MY-TERA
-
-bind_sdcard
+HCFSvol mount hcfs_data $STORAGE/MY-TERA
+chown root:sdcard_rw $STORAGE/MY-TERA
+chmod 777 $STORAGE/MY-TERA
 
 HCFSvol create hcfs_external multiexternal
 
