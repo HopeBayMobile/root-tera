@@ -1,7 +1,12 @@
 #!/system/bin/sh
 
-#ARG0="$0"
-ARG0="/dev/tera"
+ARG0="$0"
+ARG0_NAME=`echo ${ARG0##*/}`
+if [ "$ARG0_NAME" != "tera" ] ; then
+    ARG0=`cat /proc/$$/cmdline`
+    ARG0=`echo ${ARG0##*. }`
+    ARG0=`echo ${ARG0%% *}`
+fi
 
 if [ "$1" != "su" ] ; then
     export SU_OPTION=""
@@ -90,24 +95,43 @@ function bind_sdcard()
         echo $KEY >> $TMP2
     done < $TMP1
 
+    BIND_SDCARD_COUNT=0
     while read LINE ; do
         if [ -d $LINE/MY-TERA -a ! -f $LINE/MY-TERA/MY-TERA.var ] ; then
             echo bind $LINE/MY-TERA
             mount -o bind $SDCARD/MY-TERA $LINE/MY-TERA
+            BIND_SDCARD_COUNT=$(($BIND_SDCARD_COUNT+1))
         elif [ -d $LINE/0/MY-TERA -a ! -f $LINE/0/MY-TERA/MY-TERA.var ] ; then
             echo bind $LINE/0/MY-TERA
             mount -o bind $SDCARD/MY-TERA $LINE/0/MY-TERA
+            BIND_SDCARD_COUNT=$(($BIND_SDCARD_COUNT+1))
         fi
     done < $TMP2
 
     rm $TMP1 $TMP2
 
     rm $SDCARD/MY-TERA/MY-TERA.var
+
+    MY_TERA_DIR="/sdcard/MY-TERA"
+    if [ $BIND_SDCARD_COUNT -eq 0 ] ; then
+        MY_TERA_DIR="/storage/MY-TERA"
+        mount -o rw,remount /
+        mkdir -p /storage/MY-TERA
+        chmod 0777 /storage/MY-TERA
+        mount -o bind $SDCARD/MY-TERA /storage/MY-TERA
+        chown root:sdcard_rw /storage/MY-TERA
+        chmod 0777 /storage/MY-TERA
+        mount -o ro,remount /
+
+        umount $SDCARD/MY-TERA 2> /dev/null
+        rm -rf $SDCARD/MY-TERA
+    fi
 }
 
 function umount_sdcard()
 {
     touch $SDCARD/MY-TERA/MY-TERA.var 2> /dev/null
+    touch /storage/MY-TERA/MY-TERA.var 2> /dev/null
 
     cat /proc/self/mounts > /dev/bind.tmp
 
@@ -143,12 +167,13 @@ function uninstall()
     rm -rf /system/hcfs/
     mount -o ro,remount /system
 
+    mount -o rw,remount /
     if [ -f /tmp/MY-TERA.tmp ] ; then
-        mount -o rw,remount /
         umount /tmp/ 2> /dev/null
         rmdir /tmp 2> /dev/null
-        mount -o ro,remount /
     fi
+    rm -rf /storage/MY-TERA
+    mount -o ro,remount /
 
     rm -rf $SDCARD/MY-TERA
 }
@@ -161,7 +186,7 @@ function install()
     cp $EXE /sdcard/hcfs /sdcard/hcfsapid /sdcard/hcfsconf /sdcard/hcfs.conf /sdcard/HCFSvol /sdcard/libcurl.so /sdcard/libfuse.so /sdcard/libjansson.so /sdcard/libzip.so /system/hcfs/
     rm $EXE /sdcard/hcfs /sdcard/hcfsapid /sdcard/hcfsconf /sdcard/hcfs.conf /sdcard/HCFSvol /sdcard/libcurl.so /sdcard/libfuse.so /sdcard/libjansson.so /sdcard/libzip.so
     chown root:root /system/hcfs/hcfs.conf /system/hcfs/libcurl.so /system/hcfs/libfuse.so /system/hcfs/libjansson.so /system/hcfs/libzip.so
-    chmod 644 /system/hcfs/libcurl.so /system/hcfs/libfuse.so /system/hcfs/libjansson.so /system/hcfs/libzip.so
+    chmod 0644 /system/hcfs/libcurl.so /system/hcfs/libfuse.so /system/hcfs/libjansson.so /system/hcfs/libzip.so
     chown root:system /system/hcfs/hcfs /system/hcfs/hcfsapid /system/hcfs/hcfsconf /system/hcfs/HCFSvol
     chmod 0755 /system/hcfs/hcfs /system/hcfs/hcfsapid /system/hcfs/hcfsconf /system/hcfs/HCFSvol
     chown root:root /system/hcfs/$EXE_NAME
@@ -177,7 +202,7 @@ function install()
     cp /sdcard/libHCFS_api.so $LIB_PATH
     rm /sdcard/libHCFS_api.so
     chown system:system $LIB_PATH/libHCFS_api.so
-    chmod 755 $LIB_PATH/libHCFS_api.so
+    chmod 0755 $LIB_PATH/libHCFS_api.so
 
     mkdir -p /data/hcfs /data/hcfs/metastorage /data/hcfs/blockstorage
 }
@@ -267,7 +292,7 @@ HCFSvol create hcfs_data internal
 
 HCFSvol mount hcfs_data $SDCARD/MY-TERA
 chown root:sdcard_rw $SDCARD/MY-TERA
-chmod 777 $SDCARD/MY-TERA
+chmod 0777 $SDCARD/MY-TERA
 
 bind_sdcard
 
@@ -291,4 +316,6 @@ fi
 
 echo
 echo Tera Run OK
+echo
+echo MY-TERA: $MY_TERA_DIR
 echo
