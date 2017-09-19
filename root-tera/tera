@@ -68,8 +68,6 @@ function my_killall()
 
 function bind_sdcard()
 {
-    BIND_SDCARD_COUNT=0
-
     touch $SDCARD/MY-TERA/MY-TERA.var
 
     cat /proc/self/mounts > /dev/bind.tmp
@@ -79,11 +77,9 @@ function bind_sdcard()
         if [ -d $2/MY-TERA -a ! -f $2/MY-TERA/MY-TERA.var ] ; then
             echo bind $2/MY-TERA
             mount -o bind $SDCARD/MY-TERA $2/MY-TERA
-            BIND_SDCARD_COUNT=$[$BIND_SDCARD_COUNT+1]
         elif [ -d $2/0/MY-TERA -a ! -f $2/0/MY-TERA/MY-TERA.var ] ; then
             echo bind $2/0/MY-TERA
             mount -o bind $SDCARD/MY-TERA $2/0/MY-TERA
-            BIND_SDCARD_COUNT=$[$BIND_SDCARD_COUNT+1]
         fi
     done < /dev/bind.tmp
 
@@ -113,17 +109,7 @@ function umount_sdcard()
 
 function uninstall()
 {
-    if [ -s /tmp/tera2.pid ] ; then
-        kill -9 `cat /tmp/tera2.pid`
-        sleep 0.1
-        rm /tmp/tera2.pid /tmp/tera2
-    fi
-
     umount_sdcard
-
-    if [ -d /tmp/MY-TERA ] ; then
-        rm -rf /tmp/MY-TERA
-    fi
 
     my_killall hcfsapid 2> /dev/null
     sleep 0.1
@@ -267,24 +253,6 @@ chown root:sdcard_rw $SDCARD/MY-TERA
 chmod 777 $SDCARD/MY-TERA
 
 bind_sdcard
-if [ -f /system/bin/notify -a $BIND_SDCARD_COUNT -eq 0 ] ; then
-    mkdir /tmp/MY-TERA
-    mount -o bind $SDCARD/MY-TERA /tmp/MY-TERA
-    chmod 0 /tmp/MY-TERA
-
-    cat << EOF > /tmp/tera2
-#!/system/bin/sh
-while [ 1 ] ; do
-    notify -m 40000004 -c 1 $SDCARD
-    umount $SDCARD/MY-TERA
-    mount -o bind /tmp/MY-TERA $SDCARD/MY-TERA
-done
-EOF
-
-    chmod 500 /tmp/tera2
-    /tmp/tera2 &
-    echo $! > /tmp/tera2.pid
-fi
 
 HCFSvol create hcfs_external multiexternal
 
