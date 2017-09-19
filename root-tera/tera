@@ -1,15 +1,15 @@
 #!/system/bin/sh
 
 if [ "$1" != "su" ] ; then
-    OPTION=""
+    export SU_OPTION=""
 
     MY_ID=`su --mount-master -c id`
     echo $MY_ID | grep -q "uid=0(root)"
     if [ $? -eq 0 ] ; then
-        OPTION="--mount-master"
+        export SU_OPTION="--mount-master"
     fi
 
-    exec su $OPTION -c $0 su $*
+    exec su $SU_OPTION -c $0 su $*
     exit 1
 fi
 
@@ -70,20 +70,34 @@ function bind_sdcard()
 {
     touch $SDCARD/MY-TERA/MY-TERA.var
 
-    cat /proc/self/mounts > /dev/bind.tmp
+    TMP1="/dev/bind1.tmp"
+    TMP2="/dev/bind2.tmp"
+    rm -f $TMP1 $TMP2
+    touch $TMP1
+    touch $TMP2
+
+    cat /proc/self/mounts > $TMP1
+    while read LINE ; do
+        KEY=`echo "${LINE#* }"`
+        KEY=`echo "${KEY%% *}"`
+        grep -q "^$KEY$" $TMP2
+        if [ $? -eq 0 ] ; then
+            continue
+        fi
+        echo $KEY >> $TMP2
+    done < $TMP1
 
     while read LINE ; do
-        set -- $LINE
-        if [ -d $2/MY-TERA -a ! -f $2/MY-TERA/MY-TERA.var ] ; then
-            echo bind $2/MY-TERA
-            mount -o bind $SDCARD/MY-TERA $2/MY-TERA
-        elif [ -d $2/0/MY-TERA -a ! -f $2/0/MY-TERA/MY-TERA.var ] ; then
-            echo bind $2/0/MY-TERA
-            mount -o bind $SDCARD/MY-TERA $2/0/MY-TERA
+        if [ -d $LINE/MY-TERA -a ! -f $LINE/MY-TERA/MY-TERA.var ] ; then
+            echo bind $LINE/MY-TERA
+            mount -o bind $SDCARD/MY-TERA $LINE/MY-TERA
+        elif [ -d $LINE/0/MY-TERA -a ! -f $LINE/0/MY-TERA/MY-TERA.var ] ; then
+            echo bind $LINE/0/MY-TERA
+            mount -o bind $SDCARD/MY-TERA $LINE/0/MY-TERA
         fi
-    done < /dev/bind.tmp
+    done < $TMP2
 
-    rm /dev/bind.tmp
+    rm $TMP1 $TMP2
 
     rm $SDCARD/MY-TERA/MY-TERA.var
 }
