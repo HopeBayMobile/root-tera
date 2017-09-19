@@ -1,5 +1,8 @@
 #!/system/bin/sh
 
+#ARG0="$0"
+ARG0="/dev/tera"
+
 if [ "$1" != "su" ] ; then
     export SU_OPTION=""
 
@@ -9,14 +12,14 @@ if [ "$1" != "su" ] ; then
         export SU_OPTION="--mount-master"
     fi
 
-    exec su $SU_OPTION -c $0 su $*
+    #exec su $SU_OPTION -c $0 su $*
+    exec su $SU_OPTION -c ". $ARG0 su $*"
     exit 1
 fi
 
 shift
 
 
-ARG0="$0"
 ARG1="$1"
 
 echo
