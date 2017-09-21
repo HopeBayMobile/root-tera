@@ -44,8 +44,8 @@ if [ "$ARG1" == "install" ] ; then
 fi
 
 if [ "$ARG1" == "uninstall" ] ; then
-    adb shell su -c id &&
-    adb uninstall com.hopebaytech.hcfsmgmt 2> /dev/null &&
+    adb shell su -c id
+    adb uninstall com.hopebaytech.hcfsmgmt 2> /dev/null
     adb push tera /sdcard/
 
     adb shell su -c "cp -f /sdcard/tera /dev/ &> /dev/null"
