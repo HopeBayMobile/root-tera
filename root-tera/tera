@@ -18,7 +18,7 @@ if [ "$1" != "su" ] ; then
     fi
 
     #exec su $SU_OPTION -c $0 su $*
-    exec su $SU_OPTION -c ". $ARG0 su $*"
+    exec su $SU_OPTION -c "$ARG0 su $*"
     exit 1
 fi
 

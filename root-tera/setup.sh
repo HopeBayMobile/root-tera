@@ -33,11 +33,10 @@ if [ "$ARG1" == "install" ] ; then
     fi
 
     adb shell su -c "cp -f /sdcard/tera /dev/ &> /dev/null"
-    adb shell "rm -f /sdcard/tera &> /dev/null"
     adb shell su -c "cp -f /storage/emulated/0/tera /dev/ &> /dev/null"
-    adb shell "rm -f /storage/emulated/0/tera &> /dev/null"
-    adb shell su -c "chmod 777 /dev/tera &> /dev/null"
-    adb shell su -c ". /dev/tera $ARG1"
+    adb shell "rm /sdcard/tera"
+    adb shell su -c "chmod 777 /dev/tera"
+    adb shell su -c "/dev/tera $ARG1"
 
     rm -f $TMP
 
@@ -50,11 +49,10 @@ if [ "$ARG1" == "uninstall" ] ; then
     adb push tera /sdcard/
 
     adb shell su -c "cp -f /sdcard/tera /dev/ &> /dev/null"
-    adb shell "rm -f /sdcard/tera &> /dev/null"
     adb shell su -c "cp -f /storage/emulated/0/tera /dev/ &> /dev/null"
-    adb shell "rm -f /storage/emulated/0/tera &> /dev/null"
-    adb shell su -c "chmod 777 /dev/tera &> /dev/null"
-    adb shell su -c ". /dev/tera $ARG1"
+    adb shell "rm /sdcard/tera"
+    adb shell su -c "chmod 777 /dev/tera"
+    adb shell su -c "/dev/tera $ARG1"
 
     exit 0
 fi
