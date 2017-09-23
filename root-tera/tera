@@ -8,6 +8,30 @@ if [ "$ARG0_NAME" != "tera" ] ; then
     ARG0=`echo ${ARG0%% *}`
 fi
 
+function umount_bind_sdcard()
+{
+    touch $MOUNT_MY_TERA/MY-TERA.var 2> /dev/null
+
+    cat /proc/self/mounts > /dev/bind.tmp
+
+    while read LINE ; do
+        set -- $LINE
+        if [ -f $2/MY-TERA.var -a "$2" != "$MOUNT_MY_TERA" ] ; then
+            echo umount $2
+            umount $2 2> /dev/null
+        fi
+    done < /dev/bind.tmp
+
+    rm /dev/bind.tmp
+
+    rm -f $MOUNT_MY_TERA/MY-TERA.var
+}
+
+if [ "$1" == "umount_bind_sdcard" ] ; then
+    umount_bind_sdcard
+    exit
+fi
+
 if [ "$1" != "su" ] ; then
     export SU_OPTION=""
 
@@ -57,7 +81,13 @@ function my_killall()
         PROC_NAME="$1"
     fi
 
-    ps > /dev/ps.tmp
+    PS_OPTION=""
+    ps -A 2> /dev/null | grep -qw root
+    if [ $? -eq 0 ] ; then
+        PS_OPTION="-A"
+    fi
+
+    ps $PS_OPTION > /dev/ps.tmp
 
     while read LINE ; do
         set -- $LINE
@@ -76,7 +106,7 @@ function my_killall()
 
 function bind_sdcard()
 {
-    touch $SDCARD/MY-TERA/MY-TERA.var
+    touch $MOUNT_MY_TERA/MY-TERA.var
 
     TMP1="/dev/bind1.tmp"
     TMP2="/dev/bind2.tmp"
@@ -95,61 +125,132 @@ function bind_sdcard()
         echo $KEY >> $TMP2
     done < $TMP1
 
-    BIND_SDCARD_COUNT=0
     while read LINE ; do
         if [ -d $LINE/MY-TERA -a ! -f $LINE/MY-TERA/MY-TERA.var ] ; then
             echo bind $LINE/MY-TERA
-            mount -o bind $SDCARD/MY-TERA $LINE/MY-TERA
-            BIND_SDCARD_COUNT=$(($BIND_SDCARD_COUNT+1))
+            mount -o bind $MOUNT_MY_TERA $LINE/MY-TERA
+            chown root:sdcard_rw $LINE/MY-TERA
+            chmod 0777 $LINE/MY-TERA
         elif [ -d $LINE/0/MY-TERA -a ! -f $LINE/0/MY-TERA/MY-TERA.var ] ; then
             echo bind $LINE/0/MY-TERA
-            mount -o bind $SDCARD/MY-TERA $LINE/0/MY-TERA
-            BIND_SDCARD_COUNT=$(($BIND_SDCARD_COUNT+1))
+            mount -o bind $MOUNT_MY_TERA $LINE/0/MY-TERA
+            chown root:sdcard_rw $LINE/0/MY-TERA
+            chmod 0777 $LINE/0/MY-TERA
         fi
     done < $TMP2
 
+    ###
+    # umount duplicate dirs
+    cat /proc/self/mounts | grep "/MY-TERA " > $TMP1
+
+    rm $TMP2
+    touch $TMP2
+
+    while read LINE ; do
+        KEY=`echo ${LINE#* }`
+        KEY=`echo ${KEY%% *}`
+        grep -q "^$KEY$" $TMP2
+        if [ $? -eq 0 ] ; then
+            continue
+        fi
+        echo $KEY >> $TMP2
+    done < $TMP1
+
+    while read LINE ; do
+        NUM=`grep " $LINE " /proc/self/mounts | grep -c ""`
+        while [ $NUM -gt 1 ] ; do
+            umount $LINE 2> /dev/null
+            NUM=$(($NUM-1))
+        done
+    done < $TMP2
+    ###
+
     rm $TMP1 $TMP2
 
-    rm $SDCARD/MY-TERA/MY-TERA.var
+    rm $MOUNT_MY_TERA/MY-TERA.var
 
     MY_TERA_DIR="/sdcard/MY-TERA"
-    if [ $BIND_SDCARD_COUNT -eq 0 ] ; then
+    NUM=`cat /proc/self/mounts | grep "/MY-TERA " | grep -c ""`
+    if [ $NUM -le 2 ] ; then
         MY_TERA_DIR="/storage/MY-TERA"
+
+        umount_bind_sdcard
+        rm -rf $SDCARD/MY-TERA
+
+        echo bind /storage/MY-TERA
+
         mount -o rw,remount /
         mkdir -p /storage/MY-TERA
         chmod 0777 /storage/MY-TERA
-        mount -o bind $SDCARD/MY-TERA /storage/MY-TERA
+        mount -o bind $MOUNT_MY_TERA /storage/MY-TERA
         chown root:sdcard_rw /storage/MY-TERA
         chmod 0777 /storage/MY-TERA
         mount -o ro,remount /
-
-        umount $SDCARD/MY-TERA 2> /dev/null
-        rm -rf $SDCARD/MY-TERA
     fi
+}
+
+function kill_open_files()
+{
+    PRE_PID=0
+    for LINE in `echo /proc/[0-9]*/fd` ; do
+        ls -l $LINE 2> /dev/null | grep -q "/MY-TERA/"
+        if [ $? -ne 0 ] ; then
+            continue
+        fi
+
+        PID=`echo ${LINE#*/proc/}`
+        PID=`echo ${PID%%/*}`
+        if [ $PID -eq $PRE_PID ] ; then
+            continue
+        fi
+
+        kill $PID 2> /dev/null
+        sleep 0.1
+        kill -9 $PID 2> /dev/null
+
+        PRE_PID=$PID
+    done
+}
+
+function kill_mounts()
+{
+    grep "/MY-TERA " /proc/[0-9]*/mounts 2> /dev/null > /dev/mounts.tmp
+
+    PRE_PID=0
+    while read LINE ; do
+        PID=`echo ${LINE#*/proc/}`
+        PID=`echo ${PID%%/*}`
+        if [ $PID -eq $PRE_PID ] ; then
+            continue
+        fi
+
+        kill $PID 2> /dev/null
+        sleep 0.1
+        kill -9 $PID 2> /dev/null
+
+        PRE_PID=$PID
+    done < /dev/mounts.tmp
+
+    rm /dev/mounts.tmp
 }
 
 function umount_sdcard()
 {
-    touch $SDCARD/MY-TERA/MY-TERA.var 2> /dev/null
-    touch /storage/MY-TERA/MY-TERA.var 2> /dev/null
-
-    cat /proc/self/mounts > /dev/bind.tmp
-
-    while read LINE ; do
-        set -- $LINE
-        if [ -f $2/MY-TERA.var ] ; then
-            echo umount $2
-            umount $2 2> /dev/null
-        fi
-    done < /dev/bind.tmp
-
-    rm /dev/bind.tmp
-
-    #rm $SDCARD/MY-TERA/MY-TERA.var
+    umount_bind_sdcard
+    umount $MOUNT_MY_TERA 2> /dev/null
 }
 
 function uninstall()
 {
+    kill_open_files
+
+    if [ "$SU_OPTION" != "" ] ; then
+        su -c "$ARG0 umount_bind_sdcard"
+        echo
+    fi
+
+    umount_sdcard
+    kill_mounts
     umount_sdcard
 
     my_killall hcfsapid 2> /dev/null
@@ -176,6 +277,8 @@ function uninstall()
     mount -o ro,remount /
 
     rm -rf $SDCARD/MY-TERA
+
+    rm -rf $MOUNT_MY_TERA
 }
 
 function install()
@@ -212,6 +315,8 @@ export PATH=$PATH:/system/hcfs
 
 trap "" SIGHUP
 
+export MOUNT_MY_TERA="/dev/MY-TERA"
+
 SDCARD="/sdcard"
 while [ 1 ] ; do
     LINK=`readlink -f $SDCARD`
@@ -224,8 +329,8 @@ done
 echo "SDCARD=$SDCARD"
 
 if [ "$ARG1" == "uninstall" ] ; then
-    rm $EXE
     uninstall
+    rm $EXE
     sync
 
     echo
@@ -273,6 +378,9 @@ if [ ! -d /tmp ] ; then
     touch /tmp/MY-TERA.tmp
 fi
 
+mkdir -p $MOUNT_MY_TERA
+chmod 0700 $MOUNT_MY_TERA
+
 mkdir -p $SDCARD/MY-TERA
 chmod 0777 $SDCARD/MY-TERA
 
@@ -290,9 +398,8 @@ while [ ! -e /dev/shm/hcfs_reporter ]; do sleep 0.1; done
 
 HCFSvol create hcfs_data internal
 
-HCFSvol mount hcfs_data $SDCARD/MY-TERA
-chown root:sdcard_rw $SDCARD/MY-TERA
-chmod 0777 $SDCARD/MY-TERA
+HCFSvol mount hcfs_data $MOUNT_MY_TERA
+chmod 0700 $MOUNT_MY_TERA
 
 bind_sdcard
 
