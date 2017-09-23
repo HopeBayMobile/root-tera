@@ -52,7 +52,7 @@ shift
 ARG1="$1"
 
 echo
-echo Tera Version: 0.8.1
+echo Tera Version: 0.9.0
 echo
 
 EXE=$ARG0
