@@ -170,21 +170,26 @@ function bind_sdcard()
     rm $MOUNT_MY_TERA/MY-TERA.var
 
     MY_TERA_DIR="/sdcard/MY-TERA"
-    NUM=`cat /proc/self/mounts | grep "/MY-TERA " | grep -c ""`
-    if [ $NUM -le 2 ] ; then
-        MY_TERA_DIR="/storage/MY-TERA"
+    # VERSION_SDK: 23(Android 6.0)
+    if [ $VERSION_SDK -le 23 ] ; then
+        MY_TERA_DIR="/MY-TERA"
+
+        cat /proc/self/mounts | grep -q " /storage "
+        if [ $? -ne 0 ] ; then
+            MY_TERA_DIR="/storage/MY-TERA"
+        fi
 
         umount_bind_sdcard
         rm -rf $SDCARD/MY-TERA
 
-        echo bind /storage/MY-TERA
+        echo bind $MY_TERA_DIR
 
         mount -o rw,remount /
-        mkdir -p /storage/MY-TERA
-        chmod 0777 /storage/MY-TERA
-        mount -o bind $MOUNT_MY_TERA /storage/MY-TERA
-        chown root:sdcard_rw /storage/MY-TERA
-        chmod 0777 /storage/MY-TERA
+        mkdir -p $MY_TERA_DIR
+        chmod 0777 $MY_TERA_DIR
+        mount -o bind $MOUNT_MY_TERA $MY_TERA_DIR
+        chown root:sdcard_rw $MY_TERA_DIR
+        chmod 0777 $MY_TERA_DIR
         mount -o ro,remount /
     fi
 }
@@ -316,6 +321,9 @@ export PATH=$PATH:/system/hcfs
 trap "" SIGHUP
 
 export MOUNT_MY_TERA="/dev/MY-TERA"
+
+VERSION_SDK=`getprop ro.build.version.sdk`
+echo "VERSION_SDK=$VERSION_SDK"
 
 SDCARD="/sdcard"
 while [ 1 ] ; do
