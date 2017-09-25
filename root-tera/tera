@@ -131,11 +131,13 @@ function bind_sdcard()
             mount -o bind $MOUNT_MY_TERA $LINE/MY-TERA
             chown root:sdcard_rw $LINE/MY-TERA
             chmod 0777 $LINE/MY-TERA
+            HCFSvol unpin $LINE/MY-TERA
         elif [ -d $LINE/0/MY-TERA -a ! -f $LINE/0/MY-TERA/MY-TERA.var ] ; then
             echo bind $LINE/0/MY-TERA
             mount -o bind $MOUNT_MY_TERA $LINE/0/MY-TERA
             chown root:sdcard_rw $LINE/0/MY-TERA
             chmod 0777 $LINE/0/MY-TERA
+            HCFSvol unpin $LINE/0/MY-TERA
         fi
     done < $TMP2
 
@@ -190,6 +192,7 @@ function bind_sdcard()
         mount -o bind $MOUNT_MY_TERA $MY_TERA_DIR
         chown root:sdcard_rw $MY_TERA_DIR
         chmod 0777 $MY_TERA_DIR
+        HCFSvol unpin $MY_TERA_DIR
         mount -o ro,remount /
     fi
 }
@@ -412,6 +415,8 @@ chmod 0700 $MOUNT_MY_TERA
 bind_sdcard
 
 HCFSvol create hcfs_external multiexternal
+
+HCFSvol unpin $MOUNT_MY_TERA
 
 rm -f /data/data/com.hopebaytech.hcfsmgmt/hcfsapid_sock
 hcfsapid &
