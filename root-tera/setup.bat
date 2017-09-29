@@ -6,9 +6,25 @@ PATH=%PATH%;"%SYSTEMROOT%\System32"
 ::
 set help=Plz input install or uninstall
 
-IF (%1)==() echo %help% & goto END
+set argCount=0
+for %%x in (%*) do Set /A argCount+=1
+
+IF (%1)==() goto CONSOLE
+
+IF %argCount% GTR 1 echo %help% & goto END
+
+set UserInput=%1
 IF (%1)==(install) goto install
 IF (%1)==(uninstall) goto uninstall
+
+echo %help% & goto END
+
+:CONSOLE
+set /p UserInput=Plz input install or uninstall:
+IF (%UserInput%)==(install) goto install
+IF (%UserInput%)==(uninstall) goto uninstall
+
+echo %help% & goto END
 
 :install
 echo install
@@ -36,9 +52,9 @@ adb shell su -c "cp -f /sdcard/tera /dev/ &> /dev/null"
 adb shell su -c "cp -f /storage/emulated/0/tera /dev/ &> /dev/null"
 adb shell "rm /sdcard/tera"
 adb shell su -c "chmod 777 /dev/tera"
-adb shell su -c "/dev/tera %1"
+adb shell su -c "/dev/tera %UserInput%"
 
 :END
-IF (%1)==(install) del tmp.txt
+IF EXIST tmp.txt del tmp.txt
 echo Press any key to exit...
 pause >nul
