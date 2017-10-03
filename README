@@ -14,7 +14,7 @@ Shell script, tera daemon in Android.
 
 Directory "./root-tera/files/"?
 You MUST Overwrite files(depend on different Android version & mobile) to the directory.
-Default files support Android 7.1.2 & 8.0.0.
+Default files support Android 7.1+ & 8.0.0.
 
 File "./root-tera/files/hcfs"?
 * git url:   git@gitlab.hopebaytech.com:gateway-2-0/hcfs.git
