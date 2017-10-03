@@ -345,9 +345,13 @@ trap "" SIGHUP
 
 export MOUNT_MY_TERA="/dev/MY-TERA"
 
+getprop ro.product.manufacturer
+getprop ro.product.brand
 getprop ro.product.model
 getprop ro.product.name
 getprop ro.build.version.release
+df /data 2> /dev/null
+echo
 
 VERSION_SDK=`getprop ro.build.version.sdk`
 echo "VERSION_SDK=$VERSION_SDK"
