@@ -1,5 +1,8 @@
 #!/system/bin/sh
 
+export TERA_VERSION=0.10.2
+
+
 ARG0="$0"
 ARG0_NAME=`echo ${ARG0##*/}`
 if [ "$ARG0_NAME" != "tera" ] ; then
@@ -52,7 +55,7 @@ shift
 ARG1="$1"
 
 echo
-echo Tera Version: 0.10.2
+echo Tera Version: $TERA_VERSION
 echo
 
 EXE=$ARG0
