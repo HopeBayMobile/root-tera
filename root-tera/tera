@@ -30,6 +30,23 @@ function umount_bind_sdcard()
     rm -f $MOUNT_MY_TERA/MY-TERA.var
 }
 
+if [ "$1" == "tee" ] ; then
+    TERA_LOG="/data/data/com.hopebaytech.hcfsmgmt/tera.log"
+
+    touch $TERA_LOG 2> /dev/null
+    if [ $? -eq 0 ] ; then
+        chmod 666 $TERA_LOG
+    else
+        TERA_LOG="/dev/null"
+    fi
+
+    while read -r LINE ; do
+        echo $LINE >> $TERA_LOG
+        echo $LINE
+    done
+
+    exit
+fi
 if [ "$1" == "umount_bind_sdcard" ] ; then
     umount_bind_sdcard
     exit
@@ -45,7 +62,7 @@ if [ "$1" != "su" ] ; then
     fi
 
     #exec su $SU_OPTION -c $0 su $*
-    exec su $SU_OPTION -c "$ARG0 su $*"
+    exec su $SU_OPTION -c "$ARG0 su $* 2>&1 | $ARG0 tee"
     exit 1
 fi
 
