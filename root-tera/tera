@@ -179,7 +179,7 @@ function bind_sdcard()
     done < $TMP1
 
     while read LINE ; do
-        NUM=`grep " $LINE " /proc/self/mounts | grep -c ""`
+        NUM=`grep " $LINE " /proc/self/mounts | grep -c "."`
         while [ $NUM -gt 1 ] ; do
             umount $LINE 2> /dev/null
             NUM=$(($NUM-1))
