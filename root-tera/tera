@@ -345,6 +345,7 @@ trap "" SIGHUP
 
 export MOUNT_MY_TERA="/dev/MY-TERA"
 
+su --version
 getprop ro.product.manufacturer
 getprop ro.product.brand
 getprop ro.product.model
