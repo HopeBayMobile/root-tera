@@ -459,8 +459,8 @@ chown $3:$4 /data/data/com.hopebaytech.hcfsmgmt/hcfsapid_sock 2> /dev/null
 sync
 
 if [ "$ARG1" == "install" ] ; then
-    #am start -n com.hopebaytech.hcfsmgmt/.main.MainActivity
-    am start -n com.android.settings/.applications.InstalledAppDetails -d package:com.hopebaytech.hcfsmgmt
+    am start -n com.hopebaytech.hcfsmgmt/.main.MainActivity
+    #am start -n com.android.settings/.applications.InstalledAppDetails -d package:com.hopebaytech.hcfsmgmt
 fi
 
 echo
