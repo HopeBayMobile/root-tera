@@ -354,6 +354,15 @@ getprop ro.build.version.release
 df /data 2> /dev/null
 echo
 
+CPU64=`getprop ro.product.cpu.abilist64`
+echo "CPU64=$CPU64"
+
+LIB64="false"
+if [ -d /system/lib64 ] ; then
+    LIB64="true"
+fi
+echo "LIB64=$LIB64"
+
 VERSION_SDK=`getprop ro.build.version.sdk`
 echo "VERSION_SDK=$VERSION_SDK"
 
