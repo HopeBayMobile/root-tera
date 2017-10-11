@@ -35,7 +35,10 @@ if [ "$1" == "tee" ] ; then
 
     touch $TERA_LOG 2> /dev/null
     if [ $? -eq 0 ] ; then
-        chmod 666 $TERA_LOG
+        chmod 600 $TERA_LOG
+        LS_APP=`ls -ld /data/data/com.hopebaytech.hcfsmgmt`
+        set -- $LS_APP
+        chown $3:$4 $TERA_LOG 2> /dev/null
     else
         TERA_LOG="/dev/null"
     fi
