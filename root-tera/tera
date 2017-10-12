@@ -39,6 +39,9 @@ if [ "$1" == "tee" ] ; then
         LS_APP=`ls -ld /data/data/com.hopebaytech.hcfsmgmt`
         set -- $LS_APP
         chown $3:$4 $TERA_LOG 2> /dev/null
+        APP_SELINUX=`ls -Zd /data/data/com.hopebaytech.hcfsmgmt`
+        APP_SELINUX=`echo ${APP_SELINUX%% *}`
+        chcon "$APP_SELINUX" $TERA_LOG
     else
         TERA_LOG="/dev/null"
     fi
