@@ -11,6 +11,104 @@ if [ "$ARG0_NAME" != "tera" ] ; then
     ARG0=`echo ${ARG0%% *}`
 fi
 
+function get_file_owner_group()
+{
+    MY_PATH=$1
+
+    if [ ! -e $MY_PATH ] ; then
+        return
+    fi
+
+    I=0
+    PRE_X=""
+
+    MY_OK=""
+    X=`ls -ld /`
+    while [ "$X" != "$PRE_X" ] ; do
+        I=$(($I+1))
+        PRE_X=$X
+
+        V1=`echo ${X%% *}`
+        X=`echo ${X#* }`
+        V2=`echo ${X%% *}`
+
+        if [ "$V1" == "root" -a "$V2" == "root" ] ; then
+            MY_OK="true"
+            break
+        elif [ "$V1" == "0" -a "$V2" == "0" ] ; then
+            MY_OK="true"
+            break
+        fi
+    done
+
+    if [ "$MY_OK" == "" ] ; then
+        return
+    fi
+
+    LS_OPTION=""
+    if [ -d $MY_PATH ] ; then
+        LS_OPTION="d"
+    fi
+
+    X=`ls -l"$LS_OPTION" $MY_PATH`
+    while [ $I -gt 0 ] ; do
+        I=$(($I-1))
+
+        V1=`echo ${X%% *}`
+        X=`echo ${X#* }`
+        V2=`echo ${X%% *}`
+    done
+
+    echo $V1:$V2
+}
+
+function get_file_selinux()
+{
+    MY_PATH=$1
+
+    if [ ! -e $MY_PATH ] ; then
+        return
+    fi
+
+    I=0
+    PRE_X=""
+
+    MY_OK=""
+    X=`ls -Zd /`
+    while [ "$X" != "$PRE_X" ] ; do
+        I=$(($I+1))
+        PRE_X=$X
+
+        V=`echo ${X%% *}`
+        X=`echo ${X#* }`
+
+        echo $V | grep -qw object_r
+        if [ $? -eq 0 ] ; then
+            MY_OK="true"
+            break
+        fi
+    done
+
+    if [ "$MY_OK" == "" ] ; then
+        return
+    fi
+
+    LS_OPTION=""
+    if [ -d $MY_PATH ] ; then
+        LS_OPTION="d"
+    fi
+
+    X=`ls -Z"$LS_OPTION" $MY_PATH`
+    while [ $I -gt 0 ] ; do
+        I=$(($I-1))
+
+        V=`echo ${X%% *}`
+        X=`echo ${X#* }`
+    done
+
+    echo $V
+}
+
 function umount_bind_sdcard()
 {
     touch $MOUNT_MY_TERA/MY-TERA.var 2> /dev/null
@@ -36,12 +134,8 @@ if [ "$1" == "tee" ] ; then
     touch $TERA_LOG 2> /dev/null
     if [ $? -eq 0 ] ; then
         chmod 600 $TERA_LOG
-        LS_APP=`ls -ld /data/data/com.hopebaytech.hcfsmgmt`
-        set -- $LS_APP
-        chown $3:$4 $TERA_LOG 2> /dev/null
-        APP_SELINUX=`ls -Zd /data/data/com.hopebaytech.hcfsmgmt`
-        APP_SELINUX=`echo ${APP_SELINUX%% *}`
-        chcon "$APP_SELINUX" $TERA_LOG
+        chown `get_file_owner_group /data/data/com.hopebaytech.hcfsmgmt` $TERA_LOG
+        chcon `get_file_selinux /data/data/com.hopebaytech.hcfsmgmt` $TERA_LOG
     else
         TERA_LOG="/dev/null"
     fi
@@ -467,9 +561,8 @@ hcfsapid &
 while [ ! -e /data/data/com.hopebaytech.hcfsmgmt/hcfsapid_sock ]; do sleep 0.1; done
 
 #chown `ls -ld /data/data/com.hopebaytech.hcfsmgmt | tr -s " " | cut -d " " -f3,4 | tr " " ":"` /data/data/com.hopebaytech.hcfsmgmt/hcfsapid_sock
-LS_APP=`ls -ld /data/data/com.hopebaytech.hcfsmgmt`
-set -- $LS_APP
-chown $3:$4 /data/data/com.hopebaytech.hcfsmgmt/hcfsapid_sock 2> /dev/null
+chown `get_file_owner_group /data/data/com.hopebaytech.hcfsmgmt` /data/data/com.hopebaytech.hcfsmgmt/hcfsapid_sock 2> /dev/null
+chcon `get_file_selinux /data/data/com.hopebaytech.hcfsmgmt` /data/data/com.hopebaytech.hcfsmgmt/hcfsapid_sock 2> /dev/null
 
 sync
 
