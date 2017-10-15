@@ -5,6 +5,8 @@ ARG1=$1
 if [ "$ARG1" == "install" ] ; then
     TMP=`mktemp`
 
+    echo $0
+
     adb version &&
     adb shell su -c id &&
     adb install files/HopebayHCFSmgmt.apk &> $TMP &&
@@ -37,7 +39,7 @@ if [ "$ARG1" == "install" ] ; then
     adb shell su -c "cp -f /storage/emulated/0/tera /dev/ &> /dev/null"
     adb shell "rm /sdcard/tera"
     adb shell su -c "chmod 777 /dev/tera"
-    adb shell su -c "/dev/tera $ARG1"
+    adb shell su -c "/dev/tera $ARG1 $0"
 
     rm -f $TMP
 

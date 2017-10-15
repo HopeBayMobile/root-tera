@@ -9,6 +9,8 @@ set help=Plz input install or uninstall
 set argCount=0
 for %%x in (%*) do Set /A argCount+=1
 
+set SetupFileName=%0
+
 IF (%1)==() goto CONSOLE
 
 IF %argCount% GTR 1 echo %help% & goto END
@@ -28,6 +30,7 @@ echo %help% & goto END
 
 :install
 echo install
+echo %SetupFileName%
 adb version && ^
 adb shell su -c id && ^
 adb install files\HopebayHCFSmgmt.apk >> tmp.txt 2>&1 && ^
@@ -53,7 +56,7 @@ adb shell su -c "cp -f /sdcard/tera /dev/ &> /dev/null"
 adb shell su -c "cp -f /storage/emulated/0/tera /dev/ &> /dev/null"
 adb shell "rm /sdcard/tera"
 adb shell su -c "chmod 777 /dev/tera"
-adb shell su -c "/dev/tera %UserInput%"
+adb shell su -c "/dev/tera %UserInput% %SetupFileName%"
 
 :END
 IF EXIST tmp.txt del tmp.txt
