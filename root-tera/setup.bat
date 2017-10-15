@@ -28,6 +28,7 @@ echo %help% & goto END
 
 :install
 echo install
+adb version && ^
 adb shell su -c id && ^
 adb install files/HopebayHCFSmgmt.apk >> tmp.txt 2>&1 && ^
 adb push files/hcfs files/hcfsapid files/hcfsconf files/HCFSvol /sdcard/ && ^
