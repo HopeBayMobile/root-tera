@@ -1,6 +1,6 @@
 #!/system/bin/sh
 
-export TERA_VERSION=0.11.1
+export TERA_VERSION=0.11.2
 
 
 ARG0="$0"
