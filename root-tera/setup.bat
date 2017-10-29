@@ -34,8 +34,17 @@ echo %SetupFileName%
 adb version && ^
 adb shell su -c id && ^
 adb install files\HopebayHCFSmgmt.apk >> tmp.txt 2>&1 && ^
-adb push files\hcfs files\hcfsapid files\hcfsconf files\HCFSvol /sdcard/ && ^
-adb push files\libcurl.so files\libfuse.so files\libHCFS_api.so files\libjansson.so files\libzip.so hcfs.conf tera /sdcard/
+adb push files\hcfs /sdcard/ && ^
+adb push files\hcfsapid /sdcard/ && ^
+adb push files\hcfsconf /sdcard/ && ^
+adb push files\HCFSvol /sdcard/ && ^
+adb push files\libcurl.so /sdcard/ && ^
+adb push files\libfuse.so /sdcard/ && ^
+adb push files\libHCFS_api.so /sdcard/ && ^
+adb push files\libjansson.so /sdcard/ && ^
+adb push files\libzip.so /sdcard/ && ^
+adb push hcfs.conf /sdcard/ && ^
+adb push tera /sdcard/
 set RET=%ERRORLEVEL%
 
 findstr "INSTALL_FAILED_ALREADY_EXISTS" tmp.txt

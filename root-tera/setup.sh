@@ -10,7 +10,17 @@ if [ "$ARG1" == "install" ] ; then
     adb version &&
     adb shell su -c id &&
     adb install files/HopebayHCFSmgmt.apk &> $TMP &&
-    adb push files/hcfs files/hcfsapid files/hcfsconf files/HCFSvol files/libcurl.so files/libfuse.so files/libHCFS_api.so files/libjansson.so files/libzip.so hcfs.conf tera /sdcard/
+    adb push files/hcfs /sdcard/ &&
+    adb push files/hcfsapid /sdcard/ &&
+    adb push files/hcfsconf /sdcard/ &&
+    adb push files/HCFSvol /sdcard/ &&
+    adb push files/libcurl.so /sdcard/ &&
+    adb push files/libfuse.so /sdcard/ &&
+    adb push files/libHCFS_api.so /sdcard/ &&
+    adb push files/libjansson.so /sdcard/ &&
+    adb push files/libzip.so /sdcard/ &&
+    adb push hcfs.conf /sdcard/ &&
+    adb push tera /sdcard/
 
     RET=$?
 
