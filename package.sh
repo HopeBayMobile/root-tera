@@ -22,8 +22,11 @@ message() {
 }
 
 package() {
-    
-    zip -r out/root-tera-`cat ./out/version`_$1.zip root-tera
+    # Add version name for directory
+    version=`cat ./out/version`
+    mv root-tera root-tera-$version-$1
+    zip -r out/root-tera-$version_$1.zip root-tera-$version-$1
+    mv root-tera-$version-$1 root-tera
 }
 
 copy_hcfs_32bit() {
