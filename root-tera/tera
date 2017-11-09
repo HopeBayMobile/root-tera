@@ -176,6 +176,12 @@ echo
 echo Tera Version: $TERA_VERSION
 echo
 
+UUID=`getprop net.hostname`
+UUID=${UUID##*-}
+UUID=${UUID%%]*}
+echo UUID: $UUID
+echo
+
 EXE=$ARG0
 #EXE_NAME=`basename $EXE`
 EXE_NAME=`echo ${ARG0##*/}`
