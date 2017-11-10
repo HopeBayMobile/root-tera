@@ -155,7 +155,7 @@ fi
 if [ "$1" != "su" ] ; then
     export SU_OPTION=""
 
-    MY_ID=`su --mount-master -c id`
+    MY_ID=`su --mount-master -c id 2> /dev/null`
     echo $MY_ID | grep -q "uid=0(root)"
     if [ $? -eq 0 ] ; then
         export SU_OPTION="--mount-master"

@@ -45,11 +45,11 @@ if [ "$ARG1" == "install" ] ; then
         exit 1
     fi
 
-    adb shell su -c "cp -f /sdcard/tera /dev/ &> /dev/null"
-    adb shell su -c "cp -f /storage/emulated/0/tera /dev/ &> /dev/null"
+    adb shell su -c "'cp -f /sdcard/tera /dev/ &> /dev/null'"
+    adb shell su -c "'cp -f /storage/emulated/0/tera /dev/ &> /dev/null'"
     adb shell "rm /sdcard/tera"
-    adb shell su -c "chmod 777 /dev/tera"
-    adb shell su -c "/dev/tera $ARG1 $0"
+    adb shell su -c "'chmod 777 /dev/tera'"
+    adb shell su -c "'/dev/tera $ARG1 $0'"
 
     rm -f $TMP
 
@@ -61,11 +61,11 @@ if [ "$ARG1" == "uninstall" ] ; then
     adb uninstall com.hopebaytech.hcfsmgmt 2> /dev/null
     adb push tera /sdcard/
 
-    adb shell su -c "cp -f /sdcard/tera /dev/ &> /dev/null"
-    adb shell su -c "cp -f /storage/emulated/0/tera /dev/ &> /dev/null"
+    adb shell su -c "'cp -f /sdcard/tera /dev/ &> /dev/null'"
+    adb shell su -c "'cp -f /storage/emulated/0/tera /dev/ &> /dev/null'"
     adb shell "rm /sdcard/tera"
-    adb shell su -c "chmod 777 /dev/tera"
-    adb shell su -c "/dev/tera $ARG1"
+    adb shell su -c "'chmod 777 /dev/tera'"
+    adb shell su -c "'/dev/tera $ARG1'"
 
     exit 0
 fi

@@ -61,11 +61,11 @@ adb uninstall com.hopebaytech.hcfsmgmt 2> nul
 adb push tera /sdcard/
 
 :START_UP
-adb shell su -c "cp -f /sdcard/tera /dev/ &> /dev/null"
-adb shell su -c "cp -f /storage/emulated/0/tera /dev/ &> /dev/null"
+adb shell su -c "'cp -f /sdcard/tera /dev/ &> /dev/null'"
+adb shell su -c "'cp -f /storage/emulated/0/tera /dev/ &> /dev/null'"
 adb shell "rm /sdcard/tera"
-adb shell su -c "chmod 777 /dev/tera"
-adb shell su -c "/dev/tera %UserInput% %SetupFileName%"
+adb shell su -c "'chmod 777 /dev/tera'"
+adb shell su -c "'/dev/tera %UserInput% %SetupFileName%'"
 
 :END
 IF EXIST tmp.txt del tmp.txt
