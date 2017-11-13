@@ -1,11 +1,21 @@
-# Prepare apk and hcfs first
-# Apk with branch tmp_root_tera and name apk app-release.apk.
-# HCFS with branch root_android_7_0 and name directory system. 
-# ONLY use this script with last commit contain Version: xxxx 
+
+# How To Use Script
+
+# 1.Prepare apk and hcfs first
+## Apk name app-release.apk
+## HCFS from source build, and copy hold system folder
+## Apk with branch tmp_root_tera and name apk app-release.apk.
+## HCFS with branch root_android_7_0 and name directory system.
+
+# 2. Prepare two libcurl for 6.0.1 and 7.1.2
+## then name libcurl-32bit-6.0.1.so and libcurl-32bit-7.1.2.so
+
+# ONLY use this script with last commit contain "Version: xxxx"
 
 
 HCFS_32_dir="system"
 apk_filename="app-release.apk"
+
 
 get_latest_version() {
     git log | grep --regexp="Version: " -m 1 | sed 's/Version: //g' | sed 's/    //g' > ./out/version
@@ -24,8 +34,9 @@ message() {
 package() {
     # Add version name for directory
     version=`cat ./out/version`
+    echo "Root-tera Version: $version"
     mv root-tera root-tera-$version-$1
-    zip -r out/root-tera-$version_$1.zip root-tera-$version-$1
+    zip -r out/root-tera-$version-$1.zip root-tera-$version-$1
     mv root-tera-$version-$1 root-tera
 }
 
@@ -54,7 +65,16 @@ check_apk_file() {
 	exit 1
     fi
 }
-    
+
+check_libcurl_file() {
+    if [ ! -e ./out/$1 ]; then
+	echo "prebuild libcurl not found: $1"
+	exit 1
+    fi
+
+    echo "libcurl file found: $1"
+}
+
 remove_unnecessary() {
     rm root-tera/files/api_test
     rm root-tera/files/libhcfsapi.so
@@ -78,6 +98,11 @@ seven_to_eight_32() {
 
     git checkout origin/master
     copy_hcfs_32bit
+
+    # Copy coresponding libcurl
+    check_libcurl_file libcurl-32bit-7.1.2.so
+    cp -r out/libcurl-32bit-7.1.2.so root-tera/files/libcurl.so
+
     copy_apk
 
     package $version
@@ -106,10 +131,38 @@ six_to_seven_32() {
     git checkout origin/master
 
     copy_hcfs_32bit
+
+    # Copy coresponding libcurl
+    check_libcurl_file libcurl-32bit-6.0.1.so
+    cp -r out/libcurl-32bit-6.0.1.so root-tera/files/libcurl.so
+
     copy_apk
     package $version
     checkout
 }
+
+four_point_four_32() {
+    version="4.4.X_32-bit"
+    message $version
+
+    git checkout origin/master
+    copy_hcfs_32bit
+    copy_apk
+
+    package $version
+    checkout
+}
+
+# Main
+
+
+if [[ $1 == "clean" ]]; then
+    rm -rf out/root-tera*.zip
+    echo "Clean package in ./out"
+    echo ""
+    ls -l ./out
+    exit 0
+fi
 
 
 if [ ! -d out ]; then
@@ -126,5 +179,6 @@ seven_to_eight_64
 seven_to_eight_32
 six_to_seven_64
 six_to_seven_32
+four_point_four_32
 
 rm ./out/version
