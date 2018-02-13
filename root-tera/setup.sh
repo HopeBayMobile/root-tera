@@ -16,7 +16,6 @@ if [ "$ARG1" == "install" ] ; then
     adb push files/HCFSvol /sdcard/ &&
     adb push files/libcurl.so /sdcard/ &&
     adb push files/libfuse.so /sdcard/ &&
-    adb push files/libHCFS_api.so /sdcard/ &&
     adb push files/libjansson.so /sdcard/ &&
     adb push files/libzip.so /sdcard/ &&
     adb push hcfs.conf /sdcard/ &&
