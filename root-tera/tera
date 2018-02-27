@@ -431,17 +431,6 @@ function install()
     chmod 0755 /system/hcfs/$EXE_NAME
     mount -o ro,remount /system
 
-    ls /data/app/com.hopebaytech.hcfsmgmt*/lib/arm64/ &> /dev/null
-    if [ $? -eq 0 ] ; then
-        LIB_PATH="/data/app/com.hopebaytech.hcfsmgmt*/lib/arm64/"
-    else
-        LIB_PATH="/data/data/com.hopebaytech.hcfsmgmt/lib/"
-    fi
-    cp /sdcard/libHCFS_api.so $LIB_PATH
-    rm /sdcard/libHCFS_api.so
-    chown system:system $LIB_PATH/libHCFS_api.so
-    chmod 0755 $LIB_PATH/libHCFS_api.so
-
     mkdir -p /data/hcfs /data/hcfs/metastorage /data/hcfs/blockstorage
 }
 
