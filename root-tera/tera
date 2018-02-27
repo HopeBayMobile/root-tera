@@ -549,8 +549,6 @@ chmod 0700 $MOUNT_MY_TERA
 
 bind_sdcard
 
-HCFSvol create hcfs_external multiexternal
-
 HCFSvol unpin $MOUNT_MY_TERA
 
 rm -f /data/data/com.hopebaytech.hcfsmgmt/hcfsapid_sock
